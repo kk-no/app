@@ -14,12 +14,12 @@ Don't use too many.
 
 ```
 $ gcloud iam workload-identity-pools create "my-pool" \
-  --project="${PROJECT_ID}" \
+  --project="${PROJECT}" \
   --location="global" \
   --display-name="Test pool"
 
 $ gcloud iam workload-identity-pools providers create-oidc "my-provider" \
-  --project="${PROJECT_ID}" \
+  --project="${PROJECT}" \
   --location="global" \
   --workload-identity-pool="my-pool" \
   --display-name="Test provider" \
@@ -28,8 +28,8 @@ $ gcloud iam workload-identity-pools providers create-oidc "my-provider" \
 
 $ gcloud iam service-accounts create sa
 
-$ gcloud iam service-accounts add-iam-policy-binding "sa@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --project="${PROJECT_ID}" \
+$ gcloud iam service-accounts add-iam-policy-binding "sa@${PROJECT}.iam.gserviceaccount.com" \
+  --project="${PROJECT}" \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${PROJECT_ID}/locations/global/workloadIdentityPools/github/*"
+  --member="principalSet://iam.googleapis.com/projects/${PROJECT_ID}/locations/global/workloadIdentityPools/github/attribute.repository/${GH_USER}/${REPO}"
 ```
