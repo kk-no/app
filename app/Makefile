@@ -7,7 +7,7 @@ $(BIN):
 
 GOLANGCLI_LINT := $(BIN)/golangci-lint
 GOLANGCLI_LINT_VERSION := v1.48.0
-$(GOLANGCLI_LINT): | $(BIN) ## Install golangci-lint
+$(GOLANGCLI_LINT): | $(BIN)
 	@curl -sSfL "https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh" | sh -s -- -b $(BIN) $(GOLANGCLI_LINT_VERSION)
 	@chmod +x "$(BIN)/golangci-lint"
 
@@ -29,4 +29,4 @@ clean:
 
 .PHONY: lint
 lint: | $(GOLANGCLI_LINT)
-	$(BIN)/golangci-lint run --verbose --config=.golangci.yml ./...
+	$(BIN)/golangci-lint run --verbose --config=../.golangci.yml ./...
