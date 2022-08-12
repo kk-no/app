@@ -1,0 +1,16 @@
+run:
+  timeout: 2m
+
+linters:
+  enable:
+    - goimports
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - bodyclose
+    - misspell
+    - gofumpt
+    - goconst
+    - unconvert
+  disable-all: true
