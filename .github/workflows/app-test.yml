@@ -2,6 +2,8 @@ name: Run lint and test for app directory
 
 on:
   push:
+    branches:
+      - development
     paths:
       - 'app/**'
       - '.github/workflows/app-test.yml'
