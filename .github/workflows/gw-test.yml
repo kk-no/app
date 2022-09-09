@@ -1,0 +1,25 @@
+name: Run lint and test for gw directory
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'gw/**'
+      - '.github/workflows/gw-test.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./gw
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+      - name: lint
+        run: make lint
+      - name: test
+        run: make test
