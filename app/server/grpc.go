@@ -8,23 +8,26 @@ import (
 	"google.golang.org/grpc"
 )
 
-type GRPCServer struct{}
+type GRPCServer struct {
+	server *grpc.Server
+}
 
 var _ Server = (*GRPCServer)(nil)
 
-func NewGRPCServer() *GRPCServer {
-	return &GRPCServer{}
+func NewGRPCServer() (*GRPCServer, error) {
+	s := &GRPCServer{
+		server: grpc.NewServer(),
+	}
+	sample.RegisterSampleServiceServer(s.server, NewSampleServer())
+	return s, nil
 }
 
 func (s *GRPCServer) Serve(port string) error {
-	server := grpc.NewServer()
-	sample.RegisterSampleServiceServer(server, NewSampleServer())
-
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return err
 	}
-	return server.Serve(listener)
+	return s.server.Serve(listener)
 }
 
 type SampleServer struct {
