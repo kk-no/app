@@ -16,5 +16,9 @@ func main() {
 
 func run() error {
 	conf := config.Conf
-	return server.NewGRPCServer().Serve(conf.Port)
+	s, err := server.NewGRPCServer()
+	if err != nil {
+		return err
+	}
+	return s.Serve(conf.Port)
 }

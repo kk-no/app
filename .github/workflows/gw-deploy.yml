@@ -1,0 +1,62 @@
+name: Deploy gw
+
+on:
+  push:
+    tags:
+      - "gw/v*"
+
+env:
+  PROJECT_ID: "sandbox-kkno"
+  REPOSITORY: "expapp"
+  APP_NAME: "gw"
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./gw
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - id: setup
+        uses: google-github-actions/setup-gcloud@v0
+      - name: Configure docker
+        run: |
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+      - name: Build
+        run: |
+          docker build -t asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.APP_NAME }}/${{ github.sha }} ./
+      - name: Push
+        run: |
+          docker push asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.APP_NAME }}/${{ github.sha }}
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./gw
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - id: deploy
+        name: Deploy
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          image: asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.APP_NAME }}/${{ github.sha }}
+          service: "expgw"
+          region: "asia-northeast1"
