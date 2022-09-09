@@ -5,9 +5,44 @@ on:
     tags:
       - "app/v*"
 
+env:
+  PROJECT_ID: "sandbox-kkno"
+  REPOSITORY: "expapp"
+  APP_NAME: "app"
+
 jobs:
-  deploy:
+  build-push:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - id: setup
+        uses: google-github-actions/setup-gcloud@v0
+      - name: Configure docker
+        run: |
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+      - name: Build
+        run: |
+          docker build -t asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.APP_NAME }}/${{ github.sha }} ./
+      - name: Push
+        run: |
+          docker push asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.APP_NAME }}/${{ github.sha }}
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
     permissions:
       id-token: write
       contents: read
@@ -19,9 +54,9 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - id: deploy
-        name: "Deploy to Cloud Run"
+        name: Deploy
         uses: google-github-actions/deploy-cloudrun@v0
         with:
-          image: "gcr.io/cloudrun/hello"
+          image: asia-northeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.APP_NAME }}/${{ github.sha }}
           service: "expapp"
           region: "asia-northeast1"
